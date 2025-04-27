@@ -1,0 +1,6 @@
+pygame==2.5.2
+pywin32==306
+pillow==10.0.0
+customtkinter==5.2.1
+plyer==2.1.0
+pystray==0.19.4 
