@@ -65,6 +65,8 @@ class BreakReminderApp:
         # 如果设置了自动开始，则启动计时器
         if self.config["auto_start"]:
             self.start_timer()
+        # 加载音乐
+       
     
     def create_default_icon(self):
         """创建默认图标"""
@@ -284,7 +286,7 @@ class BreakReminderApp:
                 title="休息提醒",
                 message=f"工作时间结束！休息 {self.config['break_time']} 分钟",
                 app_name="休息提醒",
-                timeout=10
+                timeout=3
             )
         
         # 显示动画窗口
@@ -297,9 +299,11 @@ class BreakReminderApp:
         """结束休息"""
         self.is_break_time = False
         self.remaining_work_time = self.config["work_time"] * 60
-        self.status_label.configure(text="工作中...")
+        self.status_label.configure(text="准备开始工作")
         self.time_label.configure(text=self.format_time(self.remaining_work_time))
         self.progress_bar.set(0)
+        self.timer_running = False
+        self.start_button.configure(text="开始")
         
         # 关闭动画窗口如果存在
         if self.animation_window and self.animation_window.winfo_exists():
@@ -308,20 +312,19 @@ class BreakReminderApp:
         
         # 播放声音
         if self.config["sound_enabled"] and os.path.exists(self.config["sound_file"]):
-            pygame.mixer.music.load(self.config["sound_file"])
-            pygame.mixer.music.play()
+            pygame.mixer.music.stop()
         
         # 显示系统通知
         if self.config["show_notifications"]:
             notification.notify(
                 title="休息提醒",
-                message=f"休息时间结束！继续工作 {self.config['work_time']} 分钟",
+                message=f"休息时间结束！请点击开始按钮继续工作",
                 app_name="休息提醒",
                 timeout=10
             )
         
-        # 开始工作倒计时
-        self.work_countdown()
+        # 不再自动开始工作倒计时
+        # self.work_countdown()
     
     def show_animation_window(self):
         """显示动画窗口"""
