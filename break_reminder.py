@@ -286,7 +286,7 @@ class BreakReminderApp:
                 title="休息提醒",
                 message=f"工作时间结束！休息 {self.config['break_time']} 分钟",
                 app_name="休息提醒",
-                timeout=3
+                timeout=2
             )
         
         # 显示动画窗口
@@ -320,7 +320,7 @@ class BreakReminderApp:
                 title="休息提醒",
                 message=f"休息时间结束！请点击开始按钮继续工作",
                 app_name="休息提醒",
-                timeout=10
+                timeout=2
             )
         
         # 不再自动开始工作倒计时
