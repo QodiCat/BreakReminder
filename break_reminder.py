@@ -18,32 +18,32 @@ pygame.mixer.init()
 
 # 默认配置
 DEFAULT_CONFIG = {
-    "work_time": 1,  # 工作时间（分钟）
-    "break_time": 5,  # 休息时间（分钟）
-    "animation_folder": "animations",  # 动画文件夹
-    "animation_speed": 100,  # 动画速度（毫秒）
-    "sound_enabled": True,  # 是否启用声音
-    "sound_file": "sounds/test.mp3",  # 声音文件
-    "auto_start": True,  # 是否自动开始
-    "minimize_to_tray": True,  # 是否最小化到任务栏
-    "show_notifications": True  # 是否显示系统通知
+    "work_time": 1,  # work time (minutes)
+    "break_time": 5,  # break time (minutes)
+    "animation_folder": "animations",  # animation folder
+    "animation_speed": 100,  # animation speed (milliseconds)
+    "sound_enabled": True,  # whether to enable sound
+    "sound_file": "sounds/test.mp3",  # sound file path
+    "auto_start": True,  # whether to auto start
+    "minimize_to_tray": True,  # whether to minimize to tray
+    "show_notifications": True  # whether to show notifications
 }
 
 class BreakReminderApp:
     def __init__(self, root):
         self.root = root
         self.root.title("休息提醒")
-        self.root.geometry("400x500")
+        self.root.geometry("400x570")
         self.root.resizable(False, False)
         
-        # 设置主题
+        # set theme
         ctk.set_appearance_mode("System")
         ctk.set_default_color_theme("blue")
         
-        # 加载配置
+        # load config
         self.config = self.load_config()
         
-        # 初始化变量
+        # initialize variables
         self.timer_running = False
         self.work_timer = None
         self.break_timer = None
@@ -52,11 +52,11 @@ class BreakReminderApp:
         self.is_break_time = False
         self.animation_window = None
         
-        # 创建图标用于托盘
+        # create icon for tray
         self.icon_image = Image.open("images/icon.png") if os.path.exists("images/icon.png") else self.create_default_icon()
         self.create_system_tray()
         
-        # 创建UI
+        # create UI
         self.create_ui()
         
         # 监听窗口关闭事件
@@ -176,6 +176,7 @@ class BreakReminderApp:
         # 保存设置按钮
         save_button = ctk.CTkButton(settings_frame, text="保存设置", command=self.save_settings)
         save_button.pack(pady=10)
+        
     
     def toggle_timer(self):
         """开始或暂停计时器"""
