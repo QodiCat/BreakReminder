@@ -409,16 +409,21 @@ class BreakReminderApp:
         self.break_countdown()
     
     def end_break(self):
-        """结束休息"""
+        """结束休息
+           结束休息后不要自动开始工作倒计时
+        """
         if self.animation_window:
             self.animation_window.destroy()
             self.animation_window = None
+        
+        # 停止播放音乐
+        pygame.mixer.music.stop()
         
         self.is_break_time = False
         self.remaining_work_time = self.config["work_time"] * 60
         self.time_label.configure(text=self.format_time(self.remaining_work_time))
         self.progress_bar.set(0)
-        self.status_label.configure(text="工作中...")
+        
         
         # 记录专注结束时间
         if self.focus_start_time:
@@ -437,7 +442,7 @@ class BreakReminderApp:
             self.focus_start_time = None
             self.current_focus_goal = None
         
-        self.work_countdown()
+        
     
     def show_animation_window(self):
         """显示动画窗口"""
