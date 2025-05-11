@@ -441,6 +441,8 @@ class BreakReminderApp:
             # 重置专注时间
             self.focus_start_time = None
             self.current_focus_goal = None
+            
+        self.reset_timer()
         
         
     
