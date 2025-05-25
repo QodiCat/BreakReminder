@@ -1,0 +1,5 @@
+{
+    "debug": true,
+    "log_file": "debug.log",
+    "config_path": "config.json"
+}

@@ -4,6 +4,7 @@ import time
 import json
 import threading
 import datetime
+import logging
 import tkinter as tk
 from tkinter import messagebox, filedialog
 import customtkinter as ctk
@@ -15,18 +16,43 @@ from plyer import notification
 import cv2
 from src.focus_recorder import FocusRecorder
 
+# 设置日志
+def setup_logging():
+    try:
+        # 获取程序运行路径
+        if getattr(sys, 'frozen', False):
+            application_path = os.path.dirname(sys.executable)
+        else:
+            application_path = os.path.dirname(os.path.abspath(__file__))
+        
+        # 创建日志文件路径
+        log_file = os.path.join(application_path, 'debug.log')
+        
+        # 配置日志
+        logging.basicConfig(
+            filename=log_file,
+            level=logging.DEBUG,
+            format='%(asctime)s - %(levelname)s - %(message)s'
+        )
+        logging.info(f"程序启动，运行路径: {application_path}")
+    except Exception as e:
+        print(f"设置日志失败: {str(e)}")
+
+# 初始化日志
+setup_logging()
+
 # 初始化pygame用于播放提醒音效
 pygame.mixer.init()
 
 # 默认配置
 DEFAULT_CONFIG = {
     "work_time": 40,  # work time (minutes)
-    "break_time": 8,  # break time (minutes)
+    "break_time": 10,  # break time (minutes)
     "animation_folder": "animations",  # animation folder
     "animation_speed": 100,  # animation speed (milliseconds)
     "sound_enabled": True,  # whether to enable sound
     "sound_file": "sounds/test.mp3",  # sound file path
-    "auto_start": True,  # whether to auto start
+    "auto_start": False,  # whether to auto start
     "minimize_to_tray": True,  # whether to minimize to tray
     "show_notifications": True,  # whether to show notifications
     "media_type": "gif",  # 媒体类型: gif, video, music, none
@@ -701,36 +727,51 @@ class BreakReminderApp:
     
     def load_config(self):
         """加载配置文件"""
-        config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.json")
-        
-        if os.path.exists(config_path):
-            try:
-                with open(config_path, "r", encoding="utf-8") as f:
-                    config = json.load(f)
-                # 确保所有必要的键都存在
-                for key in DEFAULT_CONFIG:
-                    if key not in config:
-                        config[key] = DEFAULT_CONFIG[key]
-                return config
-            except:
+        try:
+            config_path = os.path.join(self.get_application_path(), "config.json")
+            logging.info(f"尝试加载配置文件: {config_path}")
+            
+            if os.path.exists(config_path):
+                try:
+                    with open(config_path, "r", encoding="utf-8") as f:
+                        config = json.load(f)
+                    logging.info("成功加载配置文件")
+                    # 确保所有必要的键都存在
+                    for key in DEFAULT_CONFIG:
+                        if key not in config:
+                            config[key] = DEFAULT_CONFIG[key]
+                    return config
+                except Exception as e:
+                    logging.error(f"读取配置文件失败: {str(e)}")
+                    return DEFAULT_CONFIG.copy()
+            else:
+                logging.warning(f"配置文件不存在: {config_path}")
                 return DEFAULT_CONFIG.copy()
-        else:
+        except Exception as e:
+            logging.error(f"加载配置文件时发生错误: {str(e)}")
             return DEFAULT_CONFIG.copy()
     
     def save_config(self, config):
         """保存配置文件"""
-        config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.json")
-        
         try:
+            config_path = os.path.join(self.get_application_path(), "config.json")
+            logging.info(f"尝试保存配置文件到: {config_path}")
+            
+            # 确保目录存在
+            os.makedirs(os.path.dirname(config_path), exist_ok=True)
+            
             with open(config_path, "w", encoding="utf-8") as f:
                 json.dump(config, f, indent=4)
+            logging.info("配置文件保存成功")
             return True
-        except:
+        except Exception as e:
+            logging.error(f"保存配置文件失败: {str(e)}")
             return False
     
     def save_settings(self):
         """保存设置"""
         try:
+            logging.info("开始保存设置")
             # 更新配置
             self.config["work_time"] = int(self.work_time_var.get())
             self.config["break_time"] = int(self.break_time_var.get())
@@ -744,16 +785,22 @@ class BreakReminderApp:
             self.config["video_file"] = self.video_file_var.get()
             self.config["music_file"] = self.music_file_var.get()
             
+            logging.info(f"更新后的配置: {self.config}")
+            
             # 保存配置
             if self.save_config(self.config):
                 messagebox.showinfo("成功", "设置已保存")
+                logging.info("设置保存成功")
                 
                 # 重置计时器以应用新设置
                 self.reset_timer()
             else:
                 messagebox.showerror("错误", "保存设置失败")
+                logging.error("设置保存失败")
         except Exception as e:
-            messagebox.showerror("错误", f"保存设置时出错: {str(e)}")
+            error_msg = f"保存设置时出错: {str(e)}"
+            logging.error(error_msg)
+            messagebox.showerror("错误", error_msg)
     
     def show_window(self):
         """显示主窗口"""
@@ -871,6 +918,12 @@ class BreakReminderApp:
             # 添加分隔线
             separator = ctk.CTkFrame(record_frame, height=1, fg_color="gray")
             separator.pack(fill="x", padx=5, pady=5)
+
+    def get_application_path(self):
+        """获取应用程序路径"""
+        if getattr(sys, 'frozen', False):
+            return os.path.dirname(sys.executable)
+        return os.path.dirname(os.path.abspath(__file__))
 
 def setup_folders():
     """设置必要的文件夹"""
