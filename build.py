@@ -43,6 +43,15 @@ def build_executable():
         '--add-data=assets;assets',  # 添加资源文件
         '--add-data=config.json;.',  # 添加配置文件
         '--add-data=debug_config.json;.',  # 添加调试配置文件
+        '--hidden-import=customtkinter',  # 添加隐藏导入
+        '--hidden-import=PIL',  # 添加隐藏导入
+        '--hidden-import=PIL._tkinter_finder',  # 添加隐藏导入
+        '--hidden-import=pygame',  # 添加隐藏导入
+        '--hidden-import=pystray',  # 添加隐藏导入
+        '--hidden-import=plyer',  # 添加隐藏导入
+        '--hidden-import=cv2',  # 添加隐藏导入
+        '--collect-all=customtkinter',  # 收集所有customtkinter相关文件
+        '--collect-all=PIL',  # 收集所有PIL相关文件
         '--noconfirm',  # 不询问确认
         'main.py'  # 主程序入口
     ]

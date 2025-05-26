@@ -41,3 +41,11 @@ A: 右键点击系统托盘图标，选择"退出"。
 ## 开源许可
 
 本项目基于 MIT 许可证开源。
+
+
+
+https://zhuanlan.zhihu.com/p/14262381962
+
+pyinstaller 打包
+pyinstaller --onefile --windowed main.py --icon=assets/images/icon.ico --add-data "config.json;."  --hidden-import=customtkinter --hidden-import=PIL --hidden-import=PIL._tkinter_finder --hidden-import=pygame --hidden-import=pystray --hidden-import=plyer --hidden-import=cv2 --collect-all=customtkinter --collect-all=PIL --collect-all=PIL._tkinter_finder --collect-all=pygame --collect-all=pystray --collect-all=plyer --collect-all=cv2
+ 

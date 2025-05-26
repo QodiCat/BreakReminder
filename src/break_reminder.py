@@ -371,7 +371,8 @@ class BreakReminderApp:
             return
             
         if self.remaining_work_time <= 0:
-            self.start_break()
+            # 使用after_idle确保在主线程中执行
+            self.root.after_idle(self.start_break)
             return
             
         self.remaining_work_time -= 1
@@ -381,7 +382,7 @@ class BreakReminderApp:
         progress = 1 - (self.remaining_work_time / (self.config["work_time"] * 60))
         self.progress_bar.set(progress)
         
-        # 继续倒计时
+        # 继续倒计时，使用after_idle确保在主线程中执行
         self.work_timer = self.root.after(1000, self.work_countdown)
     
     def break_countdown(self):
@@ -390,7 +391,8 @@ class BreakReminderApp:
             return
             
         if self.remaining_break_time <= 0:
-            self.end_break()
+            # 使用after_idle确保在主线程中执行
+            self.root.after_idle(self.end_break)
             return
             
         self.remaining_break_time -= 1
@@ -400,11 +402,12 @@ class BreakReminderApp:
         progress = 1 - (self.remaining_break_time / (self.config["break_time"] * 60))
         self.progress_bar.set(progress)
         
-        # 继续倒计时
+        # 继续倒计时，使用after_idle确保在主线程中执行
         self.break_timer = self.root.after(1000, self.break_countdown)
     
     def start_break(self):
         """开始休息"""
+        logging.info("开始休息")
         self.is_break_time = True
         self.remaining_break_time = self.config["break_time"] * 60
         self.status_label.configure(text="休息时间！")
@@ -416,20 +419,26 @@ class BreakReminderApp:
         
         # 仅在非音乐模式下，且启用声音时播放提示音
         if media_type != "music" and self.config["sound_enabled"] and os.path.exists(self.config["sound_file"]):
-            pygame.mixer.music.load(self.config["sound_file"])
-            pygame.mixer.music.play()
+            try:
+                pygame.mixer.music.load(self.config["sound_file"])
+                pygame.mixer.music.play()
+            except Exception as e:
+                logging.error(f"播放提示音失败: {str(e)}")
         
         # 显示系统通知
         if self.config["show_notifications"]:
-            notification.notify(
-                title="休息提醒",
-                message=f"工作时间结束！休息 {self.config['break_time']} 分钟",
-                app_name="休息提醒",
-                timeout=2
-            )
+            try:
+                notification.notify(
+                    title="休息提醒",
+                    message=f"工作时间结束！休息 {self.config['break_time']} 分钟",
+                    app_name="休息提醒",
+                    timeout=2
+                )
+            except Exception as e:
+                logging.error(f"显示通知失败: {str(e)}")
         
-        # 显示动画窗口
-        self.show_animation_window()
+        # 确保在主线程中显示动画窗口
+        self.root.after_idle(self.show_animation_window)
         
         # 开始休息倒计时
         self.break_countdown()
@@ -474,48 +483,59 @@ class BreakReminderApp:
     
     def show_animation_window(self):
         """显示动画窗口"""
-        # 创建新窗口
-        self.animation_window = tk.Toplevel(self.root)
-        self.animation_window.title("休息时间！")
-        self.animation_window.attributes('-topmost', True)  # 窗口始终置顶
-        
-        # 禁止用户关闭窗口
-        self.animation_window.protocol("WM_DELETE_WINDOW", self.prevent_animation_close)
-        
-        # 获取屏幕宽度和高度
-        screen_width = self.animation_window.winfo_screenwidth()
-        screen_height = self.animation_window.winfo_screenheight()
-        
-        # 设置窗口大小为屏幕的80%
-        window_width = int(screen_width * 0.8)
-        window_height = int(screen_height * 0.8)
-        
-        # 计算位置使窗口居中
-        x = (screen_width - window_width) // 2
-        y = (screen_height - window_height) // 2
-        
-        self.animation_window.geometry(f"{window_width}x{window_height}+{x}+{y}")
-        
-        # 根据选择的媒体类型显示不同内容
-        media_type = self.config.get("media_type", "gif")
-        
-        if media_type == "gif":
-            # 显示GIF动画
-            self.show_gif_animation()
-        elif media_type == "video":
-            # 播放视频
-            self.play_video()
-        elif media_type == "music":
-            # 播放音乐并显示默认文本
-            self.play_music()
-            self.show_default_animation()
-        else:
-            # 显示默认文本
-            self.show_default_animation()
-        
-        # 添加结束休息按钮
-        end_button = ctk.CTkButton(self.animation_window, text="结束休息", command=self.end_break)
-        end_button.pack(pady=20)
+        try:
+            logging.info("显示动画窗口")
+            # 创建新窗口
+            self.animation_window = tk.Toplevel(self.root)
+            self.animation_window.title("休息时间！")
+            self.animation_window.attributes('-topmost', True)  # 窗口始终置顶
+            
+            # 禁止用户关闭窗口
+            self.animation_window.protocol("WM_DELETE_WINDOW", self.prevent_animation_close)
+            
+            # 获取屏幕宽度和高度
+            screen_width = self.animation_window.winfo_screenwidth()
+            screen_height = self.animation_window.winfo_screenheight()
+            
+            # 设置窗口大小为屏幕的80%
+            window_width = int(screen_width * 0.8)
+            window_height = int(screen_height * 0.8)
+            
+            # 计算位置使窗口居中
+            x = (screen_width - window_width) // 2
+            y = (screen_height - window_height) // 2
+            
+            self.animation_window.geometry(f"{window_width}x{window_height}+{x}+{y}")
+            
+            # 根据选择的媒体类型显示不同内容
+            media_type = self.config.get("media_type", "gif")
+            
+            if media_type == "gif":
+                # 显示GIF动画
+                self.show_gif_animation()
+            elif media_type == "video":
+                # 播放视频
+                self.play_video()
+            elif media_type == "music":
+                # 播放音乐并显示默认文本
+                self.play_music()
+                self.show_default_animation()
+            else:
+                # 显示默认文本
+                self.show_default_animation()
+            
+            # 添加结束休息按钮
+            end_button = ctk.CTkButton(self.animation_window, text="结束休息", command=self.end_break)
+            end_button.pack(pady=20)
+            
+            # 确保窗口显示在最前面
+            self.animation_window.lift()
+            self.animation_window.focus_force()
+            
+            logging.info("动画窗口显示成功")
+        except Exception as e:
+            logging.error(f"显示动画窗口失败: {str(e)}")
+            messagebox.showerror("错误", f"显示休息窗口失败: {str(e)}")
     
     def show_gif_animation(self):
         """显示GIF动画"""
